@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="English Time">
+<title>English Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html,body{width:100%;height:100%;overflow:hidden;background:#764ba2}
+#app{width:100%;height:100dvh;position:relative;overflow:hidden;
+  transition:background .8s ease;font-family:'Nunito',-apple-system,sans-serif;font-weight:700}
+
+@keyframes bounce {0%,100%{transform:translateY(0)}50%{transform:translateY(-13px)}}
+@keyframes wiggle {0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pop   {0%{transform:scale(0);opacity:0}60%{transform:scale(1.18)}100%{transform:scale(1);opacity:1}}
+@keyframes up    {from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pulse {0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes burst {0%{transform:scale(0) rotate(-18deg);opacity:0}60%{transform:scale(1.22)}100%{transform:scale(1);opacity:1}}
+@keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
+@keyframes glow  {0%,100%{transform:scale(1)}40%{transform:scale(1.16)}}
+@keyframes fall  {0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(108vh) rotate(700deg);opacity:0}}
+@keyframes ppop  {0%{transform:scale(.6) translateY(38px);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideR{from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+.btn{cursor:pointer;user-select:none;-webkit-user-select:none;transition:transform .1s}
+.btn:active{transform:scale(.91)!important}
+::-webkit-scrollbar{width:0}
+
+.sc{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:max(env(safe-area-inset-top,44px),44px) 24px max(env(safe-area-inset-bottom,18px),18px);gap:18px}
+
+/* top bar */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:30;
+  padding:max(env(safe-area-inset-top,10px),10px) 14px 0;
+  display:flex;align-items:center;gap:8px}
+.pbar-track{flex:1;height:14px;border-radius:99px;overflow:hidden;position:relative;
+  background:rgba(255,255,255,.22);box-shadow:inset 0 2px 5px rgba(0,0,0,.14)}
+.pbar-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.pbar-shine{position:absolute;top:0;left:0;right:0;height:50%;
+  background:rgba(255,255,255,.22);border-radius:99px 99px 0 0;pointer-events:none}
+.lesson-label{font-family:'Fredoka One','Chalkboard SE',cursive;font-size:13px;
+  color:rgba(255,255,255,.85);white-space:nowrap}
+.star-end{font-size:15px;flex-shrink:0}
+
+.back{position:absolute;top:max(env(safe-area-inset-top,12px),12px);left:14px;z-index:40;
+  background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.5);border-radius:50%;
+  width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+  font-size:17px;color:white;font-weight:900}
+.pbadge{position:absolute;top:max(env(safe-area-inset-top,12px),12px);right:14px;z-index:40;
+  background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.45);
+  border-radius:50px;padding:5px 13px;display:flex;align-items:center;gap:7px;
+  font-family:'Fredoka One','Chalkboard SE',cursive;font-size:13px;color:white}
+
+.bubble{background:white;border-radius:20px;padding:11px 22px;max-width:300px;
+  font-size:17px;color:#2D3047;text-align:center;position:relative;
+  box-shadow:0 4px 18px rgba(0,0,0,.13)}
+.bubble::after{content:'';position:absolute;bottom:-11px;left:28px;width:0;height:0;
+  border-left:11px solid transparent;border-right:11px solid transparent;border-top:11px solid white}
+
+.sym{border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Fredoka One','Chalkboard SE',cursive;color:white;
+  border:4px solid rgba(255,255,255,.4);flex-shrink:0;line-height:1}
+.heading{font-family:'Fredoka One','Chalkboard SE',cursive;color:white;
+  text-shadow:0 3px 10px rgba(0,0,0,.22);text-align:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:370px}
+.gopt{border-radius:24px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:6px;min-height:112px;transition:background .25s,border .25s}
+.stepdots{display:flex;gap:8px}
+.sdot{width:12px;height:12px;border-radius:50%;transition:background .3s}
+.deco{position:absolute;pointer-events:none;opacity:.25;font-size:26px}
+.confetti-box{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden}
+
+/* stage pills */
+.stages{display:flex;gap:6px;flex-wrap:nowrap}
+.stage{border-radius:99px;padding:4px 12px;font-size:12px;
+  font-family:'Fredoka One','Chalkboard SE',cursive;color:white;opacity:.45;transition:opacity .3s,transform .3s}
+.stage.active{opacity:1;transform:scale(1.12)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ── PROFILES ─────────────────────────────────────────────────────────────────
+var PROFILES=[
+  {id:'maria',    name:'Maria',    emoji:'&#x1F467;',greet:'Hi Maria! Let\'s start your lesson!',
+   color:'#FF6B9D',dark:'#C94B7A',bg:'linear-gradient(155deg,#ffb3c6,#FF6B9D,#C94B7A)'},
+  {id:'francisco',name:'Francisco',emoji:'&#x1F466;',greet:'Hi Francisco! Let\'s start your lesson!',
+   color:'#4A90D9',dark:'#2563AE',bg:'linear-gradient(155deg,#93c5fd,#4A90D9,#2563AE)'},
+];
+
+// ── WORD PALETTES ─────────────────────────────────────────────────────────────
+var PAL=[
+  {bg:'#FFE8E8',ac:'#E03333'},{bg:'#E8EEFF',ac:'#3355EE'},{bg:'#E8FFE8',ac:'#229922'},
+  {bg:'#F0E8FF',ac:'#7733BB'},{bg:'#FFF0E8',ac:'#E07020'},{bg:'#FFE8F4',ac:'#CC3388'},
+  {bg:'#E8F4FF',ac:'#2277BB'},{bg:'#FFFDE0',ac:'#CC9900'},{bg:'#FDE8FF',ac:'#AA22BB'},
+  {bg:'#E8FFF4',ac:'#229966'}
+];
+function mkL(c,i){var p=PAL[i%10];return{id:'l_'+c,lbl:c,sym:c,isL:true,bg:p.bg,ac:p.ac};}
+function mkN(n,w,i){var p=PAL[i%10];return{id:'n_'+n,lbl:w,sym:''+n,isN:true,bg:p.bg,ac:p.ac};}
+
+var LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(c,i){return mkL(c,i);});
+var NUMS=[mkN(1,'One',0),mkN(2,'Two',1),mkN(3,'Three',2),mkN(4,'Four',3),mkN(5,'Five',4),
+          mkN(6,'Six',5),mkN(7,'Seven',6),mkN(8,'Eight',7),mkN(9,'Nine',8),mkN(10,'Ten',9)];
+var HINT={A:'Apple',B:'Ball',C:'Cat',D:'Dog',E:'Egg',F:'Fish',G:'Grapes',H:'Hand',I:'Ice cream',
+          J:'Juice',K:'Kite',L:'Lion',M:'Moon',N:'Nose',O:'Orange',P:'Parrot',Q:'Queen',
+          R:'Red',S:'Sun',T:'Tree',U:'Umbrella',V:'Violet',W:'Water',X:'Xylophone',Y:'Yellow',Z:'Zebra'};
+
+// ── CURRICULUM ────────────────────────────────────────────────────────────────
+// Each lesson = one full "class" the teacher guides through automatically
+var LESSONS=[
+  {id:1, theme:'Colors',      ico:'&#x1F3A8;',color:'#FF6B6B',
+   intro:'Today we learn COLORS! Listen carefully!',
+   words:[{id:'red',   lbl:'Red',   ico:'&#x1F534;',sw:'#E03333',bg:'#FFE8E8',ac:'#E03333'},
+          {id:'blue',  lbl:'Blue',  ico:'&#x1F535;',sw:'#3355EE',bg:'#E8EEFF',ac:'#3355EE'},
+          {id:'yellow',lbl:'Yellow',ico:'&#x1F7E1;',sw:'#DDAA00',bg:'#FFFDE0',ac:'#CC9900'}],
+   praise:['Wow! You know your colors!','Amazing! You are so smart!','Brilliant! Great job!']},
+
+  {id:2, theme:'Animals',     ico:'&#x1F43E;',color:'#FF9F43',
+   intro:'Now let\'s learn ANIMALS! Listen and repeat!',
+   words:[{id:'cat', lbl:'Cat', ico:'&#x1F431;',bg:'#FFF0E8',ac:'#E07020'},
+          {id:'dog', lbl:'Dog', ico:'&#x1F436;',bg:'#FFF8E8',ac:'#CC8800'},
+          {id:'bird',lbl:'Bird',ico:'&#x1F426;',bg:'#E8F4FF',ac:'#3388CC'}],
+   praise:['You know the animals!','Super! You are a star!','Excellent work!']},
+
+  {id:3, theme:'Fruits',      ico:'&#x1F34E;',color:'#26DE81',
+   intro:'Time for FRUITS! Ready?',
+   words:[{id:'apple', lbl:'Apple', ico:'&#x1F34E;',bg:'#FFE8E8',ac:'#CC2222'},
+          {id:'banana',lbl:'Banana',ico:'&#x1F34C;',bg:'#FFFDE0',ac:'#CCAA00'},
+          {id:'grapes',lbl:'Grapes',ico:'&#x1F347;',bg:'#F0E8FF',ac:'#7733BB'}],
+   praise:['Delicious! You know your fruits!','Amazing job today!','You are a superstar!']},
+
+  {id:4, theme:'More Colors', ico:'&#x1F308;',color:'#FD79A8',
+   intro:'Let\'s learn MORE colors!',
+   words:[{id:'green', lbl:'Green', ico:'&#x1F7E2;',sw:'#229922',bg:'#E8FFE8',ac:'#229922'},
+          {id:'orange',lbl:'Orange',ico:'&#x1F7E0;',sw:'#E07020',bg:'#FFF0E8',ac:'#E07020'},
+          {id:'pink',  lbl:'Pink',  ico:'&#x1FA77;',sw:'#CC3388',bg:'#FFE8F4',ac:'#CC3388'}],
+   praise:['Beautiful colors! Well done!','You are so clever!','Fantastic job!']},
+
+  {id:5, theme:'Toys',        ico:'&#x1FA80;',color:'#A29BFE',
+   intro:'Let\'s learn TOYS! Fun time!',
+   words:[{id:'ball',lbl:'Ball',ico:'&#x26BD;',bg:'#E8FFE8',ac:'#229922'},
+          {id:'doll',lbl:'Doll',ico:'&#x1FA86;',bg:'#FFE8F4',ac:'#CC3377'},
+          {id:'car', lbl:'Car', ico:'&#x1F697;',bg:'#E8EEFF',ac:'#3344CC'}],
+   praise:['Great! You know your toys!','Wonderful! Keep it up!','Superb job today!']},
+
+  {id:6, theme:'Body Parts',  ico:'&#x1F44B;',color:'#6C5CE7',
+   intro:'Now let\'s learn BODY PARTS!',
+   words:[{id:'hand',lbl:'Hand',ico:'&#x270B;',bg:'#FFF0E8',ac:'#CC6622'},
+          {id:'eye', lbl:'Eye', ico:'&#x1F441;',bg:'#E8EEFF',ac:'#3344CC'},
+          {id:'nose',lbl:'Nose',ico:'&#x1F443;',bg:'#FFE8F0',ac:'#CC3355'}],
+   praise:['Great body knowledge!','You are amazing!','Brilliant work!']},
+
+  {id:7, theme:'Letters A-C', ico:'&#x1F524;',color:'#E03333',
+   intro:'Let\'s learn the ALPHABET! A, B, C!',
+   words:[LETTERS[0],LETTERS[1],LETTERS[2]],
+   praise:['A, B, C! You did it!','Wonderful letters!','You are a great student!']},
+
+  {id:8, theme:'Letters D-F', ico:'&#x1F524;',color:'#3355EE',
+   intro:'More LETTERS! D, E, F!',
+   words:[LETTERS[3],LETTERS[4],LETTERS[5]],
+   praise:['D, E, F! Amazing!','You know your letters!','Superstar student!']},
+
+  {id:9, theme:'Letters G-I', ico:'&#x1F524;',color:'#229922',
+   intro:'Great! Now G, H, I!',
+   words:[LETTERS[6],LETTERS[7],LETTERS[8]],
+   praise:['G, H, I! Perfect!','You are so smart!','Excellent!']},
+
+  {id:10,theme:'Numbers 1-5', ico:'&#x1F522;',color:'#FF6B6B',
+   intro:'Let\'s COUNT! One, two, three!',
+   words:[NUMS[0],NUMS[1],NUMS[2],NUMS[3],NUMS[4]],
+   praise:['You can count! Amazing!','1, 2, 3, 4, 5! Perfect!','Brilliant counting!']},
+
+  {id:11,theme:'Numbers 6-10',ico:'&#x1F522;',color:'#4A90D9',
+   intro:'More numbers! Six to ten!',
+   words:[NUMS[5],NUMS[6],NUMS[7],NUMS[8],NUMS[9]],
+   praise:['You counted to ten!','Fantastic numbers!','You are a math star!']},
+
+  {id:12,theme:'Review Day!', ico:'&#x2B50;',color:'#FFD700',
+   intro:'Review day! Let\'s remember everything!',
+   words:[{id:'red',lbl:'Red',ico:'&#x1F534;',sw:'#E03333',bg:'#FFE8E8',ac:'#E03333'},
+          {id:'cat',lbl:'Cat',ico:'&#x1F431;',bg:'#FFF0E8',ac:'#E07020'},
+          LETTERS[0],NUMS[0],
+          {id:'apple',lbl:'Apple',ico:'&#x1F34E;',bg:'#FFE8E8',ac:'#CC2222'}],
+   praise:['You remember everything!','Perfect review! You are amazing!','Gold star student!']},
+];
+
+var POOL=[
+  {id:'sun',   lbl:'Sun',   ico:'&#x2600;', bg:'#FFFDE0',ac:'#CC9900'},
+  {id:'moon',  lbl:'Moon',  ico:'&#x1F319;',bg:'#E8EEFF',ac:'#4455BB'},
+  {id:'heart', lbl:'Heart', ico:'&#x2764;', bg:'#FFE8E8',ac:'#CC2222'},
+  {id:'flower',lbl:'Flower',ico:'&#x1F338;',bg:'#FFE8F4',ac:'#CC3388'},
+  {id:'tree',  lbl:'Tree',  ico:'&#x1F333;',bg:'#E8FFE8',ac:'#229922'},
+  {id:'fish',  lbl:'Fish',  ico:'&#x1F420;',bg:'#E8F4FF',ac:'#2277BB'},
+  {id:'star',  lbl:'Star',  ico:'&#x2B50;', bg:'#FFFDE0',ac:'#CCAA00'},
+  {id:'butterfly',lbl:'Butterfly',ico:'&#x1F98B;',bg:'#F4E8FF',ac:'#7733BB'},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+// Lesson flow: intro → learn(each word, auto-advance or tap) → game → reward → done
+var S={
+  screen:'profiles',   // profiles | home | lesson
+  profile:null,
+  lesson:null,
+  // within lesson
+  phase:'intro',       // intro | learn | game | reward | done
+  wi:0,                // word index in learn phase
+  learnSub:'listen',   // listen | repeat (two passes per word)
+  gr:0,gs:0,           // game round / score
+  gopts:[],gtgt:null,gpick:null,gpickid:null,
+  stars:0,
+  prog:{maria:{},francisco:{}}, // {lessonId: stars}
+  autoTimer:null,
+};
+
+function saveProg(){try{localStorage.setItem('et3',JSON.stringify(S.prog));}catch(e){}}
+function loadProg(){try{var d=localStorage.getItem('et3');if(d)S.prog=JSON.parse(d);}catch(e){}}
+function gp(){return S.profile?S.prog[S.profile.id]||{}:{};}
+function ts(){return Object.values(gp()).reduce(function(a,b){return a+b;},0);}
+
+// next uncompleted lesson
+function nextLesson(){
+  var p=gp();
+  for(var i=0;i<LESSONS.length;i++){if(p[LESSONS[i].id]===undefined)return LESSONS[i];}
+  return LESSONS[0]; // all done, cycle
+}
+function lessonNum(){
+  var p=gp(); var done=0;
+  for(var i=0;i<LESSONS.length;i++){if(p[LESSONS[i].id]!==undefined)done++;}
+  return done+1;
+}
+function totalLessons(){return LESSONS.length;}
+
+// ── SPEECH ────────────────────────────────────────────────────────────────────
+if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices();};
+function speak(txt,pitch,rate,cb){
+  if(!window.speechSynthesis){if(cb)setTimeout(cb,800);return;}
+  window.speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(txt);
+  u.lang='en-US'; u.pitch=pitch||1.3; u.rate=rate||0.82;
+  var vs=window.speechSynthesis.getVoices();
+  var v=vs.find(function(v){return v.lang==='en-US'&&v.name.toLowerCase().includes('google');})||
+         vs.find(function(v){return v.lang==='en-US';})||vs[0];
+  if(v)u.voice=v;
+  if(cb) u.onend=cb;
+  window.speechSynthesis.speak(u);
+}
+function sayWord(w,cb){
+  var t=w.lbl||w.label;
+  if(w.isL) speak('The letter '+t,1.3,.72,cb);
+  else speak(t,1.35,.80,cb);
+}
+function autoT(fn,ms){clearTimeout(S.autoTimer);S.autoTimer=setTimeout(fn,ms);}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function shuffle(a){return a.slice().sort(function(){return Math.random()-.5;});}
+function dotColor(pid){return pid==='maria'?'#FF6B9D':'#4A90D9';}
+function colorDot(pid,sz){
+  sz=sz||11;
+  return '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+dotColor(pid)+';box-shadow:0 0 0 2px white;flex-shrink:0"></div>';
+}
+
+function symHtml(w,large){
+  var sz=large?100:58, fs=large?54:30;
+  if(w.sym){if(w.sym.length>1)fs=large?42:22;
+    return '<div class="sym" style="width:'+sz+'px;height:'+sz+'px;font-size:'+fs+'px;background:linear-gradient(135deg,'+w.ac+','+w.ac+'BB)">'+w.sym+'</div>';}
+  if(w.sw){var esz=large?80:46,bw=large?52:30,bh=large?18:11;
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:5px"><div style="font-size:'+esz+'px;line-height:1">'+w.ico+'</div><div style="width:'+bw+'px;height:'+bh+'px;border-radius:99px;background:'+w.sw+'"></div></div>';}
+  return '<div style="font-size:'+(large?82:46)+'px;line-height:1">'+(w.ico||'')+'</div>';
+}
+
+// ── TOP BAR (progress) ────────────────────────────────────────────────────────
+function topBar(pct, stepLabel){
+  var p=S.profile;
+  var fg=p.id==='maria'?'linear-gradient(90deg,#FFB3C6,#FF6B9D,#C94B7A)':'linear-gradient(90deg,#93C5FD,#4A90D9,#2563AE)';
+  var shadow=p.id==='maria'?'rgba(255,107,157,.7)':'rgba(74,144,217,.7)';
+  return '<div class="topbar">'
+    +'<button class="btn back" style="position:relative;top:0;left:0;z-index:1;flex-shrink:0" onclick="goHome()">&#9664;</button>'
+    +'<div style="flex:1;display:flex;flex-direction:column;gap:3px">'
+    +'<div class="lesson-label">Lesson '+lessonNum()+' of '+totalLessons()+' &mdash; '+S.lesson.theme+' &nbsp;'+stepLabel+'</div>'
+    +'<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:'+fg+';box-shadow:0 0 10px '+shadow+'"></div><div class="pbar-shine"></div></div></div>'
+    +'<div class="star-end" style="filter:'+(pct>=100?'none':'grayscale(100%) opacity(.3)')+'">&#x2B50;</div>'
+    +'</div>';
+}
+
+// ── PHASE PROGRESS ────────────────────────────────────────────────────────────
+// Phases: intro(1) + learn words x2 passes(2N) + game(N) + reward(1) = 3N+2
+function phasePct(){
+  var n=S.lesson.words.length, total=3*n+2;
+  var cur=0;
+  if(S.phase==='intro')  cur=1;
+  else if(S.phase==='learn') cur=2+S.wi*2+(S.learnSub==='repeat'?1:0);
+  else if(S.phase==='game')  cur=2+n*2+S.gr;
+  else if(S.phase==='reward')cur=total;
+  return Math.min(100,Math.round(cur/total*100));
+}
+function phaseLabel(){
+  var icons={intro:'&#x1F4DA;',learn:'&#x1F4AC;',game:'&#x1F3AE;',reward:'&#x1F31F;'};
+  return icons[S.phase]||'';
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  var app=document.getElementById('app');
+  if(S.profile) app.style.background=S.profile.bg;
+  else app.style.background='linear-gradient(155deg,#667eea,#764ba2,#f093fb,#f5576c)';
+  var html='';
+  if(S.screen==='profiles') html=scProfiles();
+  else if(S.screen==='home')   html=scHome();
+  else if(S.screen==='lesson') html=scLesson();
+  app.innerHTML=html;
+}
+
+// ── PROFILES ─────────────────────────────────────────────────────────────────
+function scProfiles(){
+  var decos=['&#x1F308;','&#x1F31F;','&#x1F3B5;','&#x1F4AB;'];
+  var dd=decos.map(function(e,i){return '<div class="deco" style="top:'+(12+i*22)+'%;'+(i%2===0?'left:'+(4+i*2)+'%':'right:'+(4+i*2)+'%')+';animation:floatY '+(3+i*.4)+'s ease-in-out '+(i*.3)+'s infinite">'+e+'</div>';}).join('');
+  var cards=PROFILES.map(function(p,i){
+    var st=Object.values(S.prog[p.id]||{}).reduce(function(a,b){return a+b;},0);
+    var dn=Object.keys(S.prog[p.id]||{}).length;
+    var dc=p.id==='maria'?'#FF6B9D':'#4A90D9';
+    return '<button class="btn" onclick="pickProfile(\''+p.id+'\')" style="background:'+p.bg+';border:4px solid rgba(255,255,255,.5);border-radius:26px;padding:18px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;width:148px;box-shadow:0 12px 34px '+p.color+'55;animation:ppop .55s cubic-bezier(.34,1.56,.64,1) '+(i*.15)+'s both">'
+      +'<div style="width:15px;height:15px;border-radius:50%;background:'+dc+';box-shadow:0 0 0 3px white,0 0 0 5px '+p.color+';align-self:flex-end;margin-bottom:-4px"></div>'
+      +'<div style="font-size:60px;line-height:1">'+p.emoji+'</div>'
+      +'<div style="font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;font-size:22px;color:white;text-shadow:0 2px 8px rgba(0,0,0,.2)">'+p.name+'</div>'
+      +'<div style="background:rgba(255,255,255,.28);border-radius:50px;padding:4px 12px;font-size:13px;color:white;display:flex;gap:10px"><span>&#x2705; '+dn+'</span><span>&#x2B50; '+st+'</span></div>'
+      +'</button>';
+  }).join('');
+  return '<div class="sc" style="gap:14px">'+dd
+    +'<div style="animation:bounce 2s ease-in-out infinite;font-size:72px;line-height:1">&#x1F989;</div>'
+    +'<div class="heading" style="font-size:22px;animation:up .5s ease">Who is playing? &#x1F3AE;</div>'
+    +'<div style="display:flex;flex-direction:row;gap:16px;justify-content:center">'+cards+'</div>'
+    +'</div>';
+}
+
+// ── HOME ─────────────────────────────────────────────────────────────────────
+function scHome(){
+  var p=S.profile;
+  var nl=nextLesson();
+  var done=Object.keys(gp()).length;
+  var allDone=done>=LESSONS.length;
+  // mini progress pips
+  var pips=LESSONS.map(function(l){return '<div style="width:11px;height:11px;border-radius:50%;background:'+(gp()[l.id]?p.color:'rgba(255,255,255,.28)')+';border:2px solid rgba(255,255,255,.4);transition:background .4s"></div>';}).join('');
+  var dd=['&#x1F308;','&#x1F31F;','&#x1F3B5;','&#x1F4AB;','&#x1F338;'].map(function(e,i){return '<div class="deco" style="top:'+(10+i*18)+'%;'+(i%2===0?'left:'+(5+i*3)+'%':'right:'+(5+i*3)+'%')+';animation:floatY '+(3+i*.5)+'s ease-in-out '+(i*.4)+'s infinite">'+e+'</div>';}).join('');
+  var nextInfo=!allDone?'<div style="background:rgba(255,255,255,.2);border-radius:16px;padding:10px 20px;text-align:center;animation:up .5s ease .3s both">'
+    +'<div style="font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;font-size:14px;color:rgba(255,255,255,.8)">Today\'s lesson</div>'
+    +'<div style="font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;font-size:20px;color:white">'+nl.ico+' '+nl.theme+'</div>'
+    +'</div>':'<div style="font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;font-size:18px;color:white;text-align:center">&#x1F3C6; All lessons done!<br>&#x1F504; Starting over!</div>';
+  return '<div class="sc">'+dd
+    +'<button class="btn pbadge" onclick="switchProfile()">'+colorDot(p.id)+' '+p.emoji+' '+p.name+'</button>'
+    +'<div style="position:absolute;top:max(env(safe-area-inset-top,12px),12px);right:14px;z-index:40;background:rgba(255,255,255,.9);border-radius:50px;padding:5px 13px;font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;font-size:17px;color:#FFB700;box-shadow:0 4px 14px rgba(0,0,0,.12)">&#x2B50; '+ts()+'</div>'
+    +'<div style="animation:bounce 2.2s ease-in-out infinite;font-size:90px;line-height:1">&#x1F989;</div>'
+    +'<div class="bubble">Hi '+p.name+'! Ready for class? &#x1F4DA;</div>'
+    +nextInfo
+    +'<button class="btn" onclick="startLesson()" style="background:linear-gradient(135deg,'+p.color+','+p.dark+');border:none;border-radius:50px;padding:20px 64px;font-size:28px;font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;color:white;box-shadow:0 8px 28px '+p.color+'66;animation:pulse 2.2s ease-in-out infinite">&#x25B6; START CLASS!</button>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:260px">'+pips+'</div>'
+    +'</div>';
+}
+
+// ── LESSON ROUTER ─────────────────────────────────────────────────────────────
+function scLesson(){
+  if(S.phase==='intro')  return scIntro();
+  if(S.phase==='learn')  return scLearn();
+  if(S.phase==='game')   return scGame();
+  if(S.phase==='reward') return scReward();
+  return '';
+}
+
+// ── PHASE: INTRO (teacher presents the topic) ─────────────────────────────────
+function scIntro(){
+  var l=S.lesson, p=S.profile;
+  var bar=topBar(phasePct(),phaseLabel());
+  // Show all words as a preview
+  var preview='';
+  if(l.words[0].sym){
+    preview='<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:300px;animation:pop .5s ease .3s both">'+l.words.map(function(w){return symHtml(w,false);}).join('')+'</div>';
+  } else {
+    preview='<div style="font-size:86px;line-height:1;animation:pop .6s ease .2s both;filter:drop-shadow(0 8px 16px rgba(0,0,0,.2))">'+l.ico+'</div>';
+  }
+  return bar+'<div class="sc" style="padding-top:max(env(safe-area-inset-top,70px),70px)">'
+    +'<div style="animation:wiggle 3s ease-in-out infinite;font-size:80px;line-height:1">&#x1F989;</div>'
+    +'<div class="bubble" style="animation:up .4s ease">'+l.intro+'</div>'
+    +preview
+    +'<div class="heading" style="font-size:30px;animation:up .5s ease .3s both">'+l.ico+' '+l.theme+'</div>'
+    +'<button class="btn" onclick="phaseLearn()" style="background:linear-gradient(135deg,'+l.color+','+l.color+'BB);border:none;border-radius:50px;padding:16px 54px;font-size:23px;font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;color:white;box-shadow:0 8px 26px '+l.color+'70;animation:up .4s ease .5s both">Let\'s Go! &#x1F680;</button>'
+    +'</div>';
+}
+
+// ── PHASE: LEARN (two passes: listen then repeat) ─────────────────────────────
+function scLearn(){
+  var l=S.lesson, w=l.words[S.wi], p=S.profile;
+  var bar=topBar(phasePct(),phaseLabel());
+  var isListen=S.learnSub==='listen';
+  var hint=w.isL?HINT[w.label||w.lbl]:'';
+  var hintHtml=hint?'<div style="font-size:14px;color:'+w.ac+'99">...for '+hint+'!</div>':'';
+  // step dots: one per word
+  var sd=l.words.map(function(_,i){return '<div class="sdot" style="width:14px;height:14px;background:'+(i<S.wi?p.color:i===S.wi?'white':'rgba(255,255,255,.28)')+'"></div>';}).join('');
+
+  var ollie=isListen
+    ?'<div style="animation:floatY 3s ease-in-out infinite;font-size:68px;line-height:1">&#x1F989;</div>'
+    +'<div class="bubble">Now say it with me! &#x1F5E3;</div>'
+    :'<div style="animation:wiggle 1.5s ease-in-out infinite;font-size:68px;line-height:1">&#x1F989;</div>'
+    +'<div class="bubble">Great! Again! &#x1F44F;</div>';
+
+  var action=isListen
+    ?'<button class="btn" onclick="tapListen()" style="background:linear-gradient(135deg,'+w.ac+','+w.ac+'CC);border:none;border-radius:50px;padding:14px 44px;font-size:20px;font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;color:white;box-shadow:0 6px 22px '+w.ac+'50">&#x1F50A; Listen again</button>'
+    :'<button class="btn" onclick="tapRepeat()" style="background:linear-gradient(135deg,#26DE81,#00B894);border:none;border-radius:50px;padding:14px 44px;font-size:20px;font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;color:white;box-shadow:0 6px 22px rgba(38,222,129,.5)">&#x2705; Got it! Next</button>';
+
+  return bar+'<div class="sc" style="padding-top:max(env(safe-area-inset-top,70px),70px);gap:14px">'
+    +'<div class="stepdots">'+sd+'</div>'
+    +ollie
+    +'<div class="btn" onclick="tapCard()" style="background:'+w.bg+';border-radius:30px;padding:24px 30px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 12px 32px '+w.ac+'44;border:4px solid '+w.ac+';min-width:180px;animation:pop .45s ease">'
+    +symHtml(w,true)
+    +'<div style="font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;font-size:30px;color:'+w.ac+'">'+w.lbl+'</div>'
+    +hintHtml
+    +'</div>'
+    +action
+    +'</div>';
+}
+
+// ── PHASE: GAME ───────────────────────────────────────────────────────────────
+function scGame(){
+  var l=S.lesson, t=S.gtgt, p=S.profile;
+  if(!t) return '';
+  var bar=topBar(phasePct(),phaseLabel());
+  var total=l.words.length;
+  var sd=l.words.map(function(_,i){return '<div class="sdot" style="width:14px;height:14px;background:'+(i<S.gr?p.color:i===S.gr?'white':'rgba(255,255,255,.28)')+'"></div>';}).join('');
+  var instr=l.words[0].isL?'&#x1F524; Find the letter <b style="color:'+p.color+'">'+t.lbl+'</b>':
+            l.words[0].isN?'&#x1F522; Find the number <b style="color:'+p.color+'">'+t.lbl+'</b>':
+            '&#x1F50A; Tap <b style="color:'+p.color+'">'+t.lbl+'</b>! '+(t.ico||'');
+  var opts=S.gopts.map(function(w,i){
+    var ch=S.gpickid===w.id;
+    var ok=ch&&S.gpick==='ok', bad=ch&&S.gpick==='bad', rev=S.gpick==='bad'&&w.id===t.id;
+    var border='transparent',bg=w.bg||'#F4F4F4';
+    if(ok||rev){border='#26DE81';bg='#EAFFF4';}
+    if(bad)    {border='#FF6B6B';bg='#FFF0F0';}
+    var anim=ok?'glow .4s ease':bad?'shake .4s ease':'pop .35s ease '+(i*.07)+'s both';
+    var mark=(ok||rev)?'&#x2705;':bad?'&#x274C;':'';
+    return '<div class="btn gopt" onclick="tapOpt(\''+w.id+'\')" style="background:'+bg+';border:3px solid '+border+';box-shadow:'+(ok||rev?'0 0 22px rgba(38,222,129,.5)':bad?'0 0 22px rgba(255,107,107,.5)':'0 5px 16px rgba(0,0,0,.1)')+';animation:'+anim+'">'+symHtml(w,false)+(mark?'<div style="font-size:20px">'+mark+'</div>':'')+'</div>';
+  }).join('');
+  return bar+'<div class="sc" style="padding-top:max(env(safe-area-inset-top,70px),70px);justify-content:flex-start;gap:13px">'
+    +'<div class="stepdots">'+sd+'</div>'
+    +'<div style="animation:floatY 3s ease-in-out infinite;font-size:60px;line-height:1">&#x1F989;</div>'
+    +'<div class="btn bubble" style="font-size:18px;cursor:pointer" onclick="replayQ()">'+instr+'</div>'
+    +'<div class="grid2">'+opts+'</div>'
+    +'<div class="heading" style="font-size:17px;opacity:.88">&#x2B50; '+S.gs+' of '+S.gr+' correct</div>'
+    +'</div>';
+}
+
+// ── PHASE: REWARD ─────────────────────────────────────────────────────────────
+function scReward(){
+  var p=S.profile, l=S.lesson, st=S.stars;
+  var face=st===3?'&#x1F973;':st===2?'&#x1F604;':'&#x1F989;';
+  var msg=l.praise[Math.floor(Math.random()*l.praise.length)];
+  var starRow=Array.from({length:3},function(_,i){return '<div style="font-size:52px;filter:'+(i<st?'none':'grayscale(100%) opacity(.3)')+';animation:'+(i<st?'burst .5s ease '+(i*.2)+'s both':'none')+'">&#x2B50;</div>';}).join('');
+  var chips=l.words.map(function(w,i){
+    var ico=w.sym?'<div class="sym" style="width:26px;height:26px;font-size:14px;background:'+w.ac+'">'+w.sym+'</div>':(w.ico||'');
+    return '<div class="btn" onclick="speak(\''+w.lbl+'\')" style="background:rgba(255,255,255,.9);border-radius:16px;padding:7px 13px;display:flex;align-items:center;gap:7px;font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;font-size:14px;color:#2D3047;box-shadow:0 3px 10px rgba(0,0,0,.1);animation:burst .4s ease '+(i*.1+.5)+'s both">'+ico+' '+w.lbl+'</div>';
+  }).join('');
+  var bar=topBar(100,phaseLabel());
+  return bar+'<div class="sc" style="padding-top:max(env(safe-area-inset-top,70px),70px);position:relative;overflow:hidden">'
+    +'<div class="confetti-box" id="cbox"></div>'
+    +'<div style="font-size:100px;line-height:1;position:relative;z-index:1;animation:'+(st===3?'wiggle .6s ease infinite':'bounce 2s ease infinite')+'">'+face+'</div>'
+    +'<div class="heading" style="font-size:28px;animation:pop .5s ease;position:relative;z-index:1;max-width:280px">'+msg+'</div>'
+    +'<div style="display:flex;gap:12px;position:relative;z-index:1">'+starRow+'</div>'
+    +'<div style="background:rgba(255,255,255,.92);border-radius:18px;padding:9px 22px;font-size:15px;font-weight:700;color:'+p.color+';animation:up .4s ease .3s both;position:relative;z-index:1;border:2px solid '+p.color+'">'+p.emoji+' '+p.name+' &#x2014; &#x1F3AF; '+S.gs+'/'+l.words.length+' correct!</div>'
+    +'<div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:center;max-width:340px;position:relative;z-index:1">'+chips+'</div>'
+    +'<button class="btn" onclick="finishLesson()" style="background:linear-gradient(135deg,'+p.color+','+p.dark+');border:none;border-radius:50px;padding:17px 52px;font-size:23px;font-family:\'Fredoka One\',\'Chalkboard SE\',cursive;color:white;box-shadow:0 8px 26px '+p.color+'55;animation:up .4s ease .9s both;position:relative;z-index:1">See you next class! &#x1F44B;</button>'
+    +'</div>';
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+function pickProfile(id){
+  S.profile=PROFILES.find(function(p){return p.id===id;});
+  S.screen='home';
+  speak(S.profile.greet,1.35,.82);
+  render();
+}
+function switchProfile(){
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  clearTimeout(S.autoTimer);
+  S.profile=null; S.screen='profiles'; render();
+}
+function goHome(){
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  clearTimeout(S.autoTimer);
+  S.screen='home'; S.lesson=null; render();
+}
+
+function startLesson(){
+  var l=nextLesson();
+  S.lesson=l; S.screen='lesson'; S.phase='intro';
+  speak(l.intro,1.3,.82);
+  render();
+}
+
+// intro → learn
+function phaseLearn(){
+  S.phase='learn'; S.wi=0; S.learnSub='listen';
+  render();
+  autoT(function(){sayWord(S.lesson.words[0]);},400);
+}
+
+// tap the word card = hear it again
+function tapCard(){sayWord(S.lesson.words[S.wi]);}
+
+// listen sub-phase button
+function tapListen(){
+  sayWord(S.lesson.words[S.wi],function(){
+    // after speaking, auto-advance to repeat phase
+    autoT(function(){
+      S.learnSub='repeat'; render();
+    },400);
+  });
+}
+
+// repeat sub-phase button = move to next word or game
+function tapRepeat(){
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  if(S.wi<S.lesson.words.length-1){
+    S.wi++; S.learnSub='listen'; render();
+    autoT(function(){sayWord(S.lesson.words[S.wi]);},400);
+  } else {
+    startGame();
+  }
+}
+
+function startGame(){
+  S.phase='game'; S.gr=0; S.gs=0; S.gpick=null; S.gpickid=null;
+  buildRound(); render();
+}
+
+function buildRound(){
+  if(S.gr>=S.lesson.words.length){endGame();return;}
+  var tgt=S.lesson.words[S.gr];
+  var pool;
+  if(tgt.isL)      pool=shuffle(LETTERS.filter(function(w){return w.id!==tgt.id;}));
+  else if(tgt.isN) pool=shuffle(NUMS.filter(function(w){return w.id!==tgt.id;}));
+  else             pool=shuffle(POOL.concat(LESSONS.reduce(function(a,l){return a.concat(l.words);},[])).filter(function(w){return w.id!==tgt.id&&!w.sym;}));
+  S.gtgt=tgt;
+  S.gopts=shuffle(pool.slice(0,3).concat([tgt]));
+  S.gpick=null; S.gpickid=null;
+  autoT(function(){
+    var q=tgt.isL?'Find the letter '+tgt.lbl:tgt.isN?'Find the number '+tgt.lbl:'Tap the '+tgt.lbl;
+    speak(q,1.3,.85);
+  },350);
+}
+
+function replayQ(){
+  var t=S.gtgt; if(!t) return;
+  var q=t.isL?'Find the letter '+t.lbl:t.isN?'Find the number '+t.lbl:'Tap the '+t.lbl;
+  speak(q,1.3,.85);
+}
+
+function tapOpt(wid){
+  if(S.gpick) return;
+  var ok=wid===S.gtgt.id;
+  S.gpick=ok?'ok':'bad'; S.gpickid=wid;
+  if(ok){speak('Yes! Great job!',1.4,.9);S.gs++;}
+  else   speak('Oops! Try again!',1.2,.9);
+  render();
+  autoT(function(){S.gr++;if(S.gr>=S.lesson.words.length)endGame();else{buildRound();render();}},1600);
+}
+
+function endGame(){
+  var n=S.lesson.words.length;
+  S.stars=S.gs>=n?3:S.gs>=Math.ceil(n/2)?2:1;
+  S.phase='reward';
+  var msgs=['Amazing! You are a superstar!','Great job! Well done!','Keep going! You can do it!'];
+  autoT(function(){speak(msgs[Math.min(3-S.stars,2)],1.4,.88);},500);
+  render();
+  if(S.stars>=2) autoT(confetti,350);
+}
+
+function finishLesson(){
+  var pid=S.profile.id, lid=S.lesson.id;
+  S.prog[pid][lid]=Math.max(S.prog[pid][lid]||0,S.stars);
+  saveProg();
+  S.screen='home'; S.lesson=null;
+  speak('See you next class! Great work '+S.profile.name+'!',1.35,.82);
+  render();
+}
+
+function confetti(){
+  var box=document.getElementById('cbox'); if(!box) return;
+  var pink=S.profile.id==='maria';
+  var cols=pink?['#FF6B9D','#FFB3C6','#FFD700','#FF9F43','#fff']:['#4A90D9','#93C5FD','#FFD700','#4ECDC4','#fff'];
+  for(var i=0;i<28;i++){
+    var d=document.createElement('div');
+    var c=cols[i%cols.length], w=10+Math.random()*8, h=10+Math.random()*8;
+    d.style.cssText='position:absolute;top:-10px;left:'+((i/28)*100)+'%;width:'+w+'px;height:'+h+'px;background:'+c+';border-radius:'+(Math.random()>.5?'50%':'3px')+';animation:fall '+(2+Math.random()*2)+'s ease '+(Math.random()*.5)+'s both;pointer-events:none';
+    box.appendChild(d);
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadProg();
+if(window.speechSynthesis) window.speechSynthesis.getVoices();
+render();
+autoT(function(){speak('Who is playing today?',1.3,.82);},800);
+</script>
+</body>
+</html>
